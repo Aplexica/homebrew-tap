@@ -4,8 +4,8 @@ class Aplexica < Formula
   url "https://github.com/Aplexica/Aplexica.git",
       revision: "ad68312c7f2e67b5d0c87d8da668c291a13e720f"
   version "1.0.0"
-  revision 1
   license "AGPL-3.0-or-later"
+  revision 1
   head "https://github.com/Aplexica/Aplexica.git", branch: "main"
 
   depends_on "go" => :build
