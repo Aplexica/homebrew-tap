@@ -1,5 +1,5 @@
 class Aplexica < Formula
-  desc "Cross-agent state portability for AI coding agents (deterministic lossless replication)"
+  desc "Cross-agent state portability for AI coding agents"
   homepage "https://aplexica.com"
   url "https://github.com/Aplexica/Aplexica.git",
       revision: "52bcf4fe1d9528da469c1c1f826c13b600d780ae"
