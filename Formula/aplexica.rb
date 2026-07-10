@@ -2,19 +2,21 @@ class Aplexica < Formula
   desc "Cross-agent state portability for AI coding agents"
   homepage "https://aplexica.com"
   url "https://github.com/Aplexica/Aplexica.git",
-      revision: "a8f13f1165e548db27126973a29252b522dbdeb9"
-  version "1.0.0"
+      revision: "0e2a2d449f45320cd54cab548a0a25504bbc261d"
+  version "1.0.1"
   license "AGPL-3.0-or-later"
-  revision 2
   head "https://github.com/Aplexica/Aplexica.git", branch: "main"
 
   depends_on "go" => :build
   depends_on "node" => :build
   depends_on "pnpm" => :build
 
+  # aplexica-portal is versioned independently (v0.1.x), not in lockstep with
+  # the daemon. The v1.0.1 daemon release embedded the latest portal available
+  # at build time: v0.1.10.
   resource "portal" do
     url "https://github.com/Aplexica/aplexica-portal.git",
-        revision: "4605b7a021b843706df4a0ec173c3f8d8a221c57"
+        revision: "d0d0d62c795fa2a008874917f346697b5c1d91d1"
   end
 
   def install
@@ -35,8 +37,8 @@ class Aplexica < Formula
     ldflags = %W[
       -s -w
       -X github.com/aplexica/aplexica/internal/version.Version=v#{version}
-      -X github.com/aplexica/aplexica/internal/version.GitCommit=a8f13f1165e548db27126973a29252b522dbdeb9
-      -X github.com/aplexica/aplexica/internal/version.BuildDate=2026-07-07T20:50:04-04:00
+      -X github.com/aplexica/aplexica/internal/version.GitCommit=0e2a2d449f45320cd54cab548a0a25504bbc261d
+      -X github.com/aplexica/aplexica/internal/version.BuildDate=2026-07-09T20:59:37Z
     ].join(" ")
 
     system "go", "build", "-tags", "release", "-trimpath", "-ldflags", ldflags,
@@ -44,10 +46,12 @@ class Aplexica < Formula
     system "go", "build", "-tags", "release", "-trimpath", "-ldflags", ldflags,
            "-o", bin/"aplexica-status", "./cmd/aplexica"
 
-    if OS.mac?
-      system "go", "build", "-tags", "tray", "-trimpath", "-ldflags", ldflags,
-             "-o", bin/"aplexicatray", "./cmd/aplexicatray"
-    end
+    # Tray indicator — now built on Linux too, not just macOS. The systray
+    # library (fyne.io/systray) uses Cocoa on macOS and pure-Go DBus
+    # (StatusNotifierItem) on Linux, so the Linux build needs no GTK /
+    # AppIndicator dev libraries and no cgo — just `-tags tray`.
+    system "go", "build", "-tags", "tray", "-trimpath", "-ldflags", ldflags,
+           "-o", bin/"aplexicatray", "./cmd/aplexicatray"
   end
 
   def caveats
@@ -57,11 +61,16 @@ class Aplexica < Formula
         aplexica-status - tray status watcher helper
         aplexicatray    - system-tray indicator
 
-      To complete setup and start the daemon + tray:
+      One-time setup — configure and start the daemon + tray (no sudo needed):
         aplexica setup --yes --install
 
-      The daemon starts the local web UI and launches the tray when Aplexica runs.
-      Local web UI: click the tray icon -> Open Aplexica, or run:
+      That installs the per-user service (systemd --user on Linux, launchd on
+      macOS) and the tray autostart entry, then starts them; both come back
+      automatically at each login. This is a separate step because Homebrew
+      runs post_install in a sandbox with a temporary HOME, so autostart can't
+      be wired during `brew install` itself.
+
+      Open the local web UI from the tray (Open Aplexica), or run:
         aplexica web open
 
       User data lives in ~/.aplexica/. Logs at ~/.aplexica/logs/.
