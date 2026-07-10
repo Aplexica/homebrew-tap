@@ -2,8 +2,8 @@ class Aplexica < Formula
   desc "Cross-agent state portability for AI coding agents"
   homepage "https://aplexica.com"
   url "https://github.com/Aplexica/Aplexica.git",
-      revision: "0e2a2d449f45320cd54cab548a0a25504bbc261d"
-  version "1.0.1"
+      revision: "5b3df06f6e0c143329929bf9b03efbe4f9c32c0a"
+  version "1.0.2"
   license "AGPL-3.0-or-later"
   head "https://github.com/Aplexica/Aplexica.git", branch: "main"
 
@@ -37,8 +37,8 @@ class Aplexica < Formula
     ldflags = %W[
       -s -w
       -X github.com/aplexica/aplexica/internal/version.Version=v#{version}
-      -X github.com/aplexica/aplexica/internal/version.GitCommit=0e2a2d449f45320cd54cab548a0a25504bbc261d
-      -X github.com/aplexica/aplexica/internal/version.BuildDate=2026-07-09T20:59:37Z
+      -X github.com/aplexica/aplexica/internal/version.GitCommit=5b3df06f6e0c143329929bf9b03efbe4f9c32c0a
+      -X github.com/aplexica/aplexica/internal/version.BuildDate=2026-07-10T13:46:56-04:00
     ].join(" ")
 
     system "go", "build", "-tags", "release", "-trimpath", "-ldflags", ldflags,
