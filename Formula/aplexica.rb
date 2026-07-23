@@ -2,8 +2,8 @@ class Aplexica < Formula
   desc "Cross-agent state portability for AI coding agents"
   homepage "https://aplexica.com"
   url "https://github.com/Aplexica/Aplexica.git",
-      revision: "5b3df06f6e0c143329929bf9b03efbe4f9c32c0a"
-  version "1.0.2"
+      revision: "3441815c1975868320661a2485bdbac5940a90c6"
+  version "1.0.41"
   license "AGPL-3.0-or-later"
   head "https://github.com/Aplexica/Aplexica.git", branch: "main"
 
@@ -12,11 +12,11 @@ class Aplexica < Formula
   depends_on "pnpm" => :build
 
   # aplexica-portal is versioned independently (v0.1.x), not in lockstep with
-  # the daemon. The v1.0.1 daemon release embedded the latest portal available
-  # at build time: v0.1.10.
+  # the daemon. Pin the exact portal source embedded in the v1.0.41 desktop
+  # release so Homebrew installs the same reviewed source closure.
   resource "portal" do
     url "https://github.com/Aplexica/aplexica-portal.git",
-        revision: "d0d0d62c795fa2a008874917f346697b5c1d91d1"
+        revision: "6cd090014acdc5780ada323c4d9c34c3834707a9"
   end
 
   def install
@@ -37,8 +37,8 @@ class Aplexica < Formula
     ldflags = %W[
       -s -w
       -X github.com/aplexica/aplexica/internal/version.Version=v#{version}
-      -X github.com/aplexica/aplexica/internal/version.GitCommit=5b3df06f6e0c143329929bf9b03efbe4f9c32c0a
-      -X github.com/aplexica/aplexica/internal/version.BuildDate=2026-07-10T13:46:56-04:00
+      -X github.com/aplexica/aplexica/internal/version.GitCommit=3441815c1975868320661a2485bdbac5940a90c6
+      -X github.com/aplexica/aplexica/internal/version.BuildDate=2026-07-22T22:26:47-04:00
     ].join(" ")
 
     system "go", "build", "-tags", "release", "-trimpath", "-ldflags", ldflags,
