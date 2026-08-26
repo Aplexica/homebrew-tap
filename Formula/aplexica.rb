@@ -1,84 +1,117 @@
+# Canonical Homebrew formula for the Aplexica/homebrew-tap repository.
+#
+# This file is the source of truth for the tap's Formula/aplexica.rb. It is a
+# BINARY formula: it installs the executables from a published release
+# archive whose digest is covered by the release's cosign-signed SHA256SUMS.
+# It deliberately does NOT build from source, because the release archive
+# already carries the compiled-in local web UI.
+#
+# A source-controlled workflow DOES publish this formula: the `tap` job in
+# .github/workflows/release.yml substitutes 1.0.74 and the four
+# SHA256_* placeholders below with digests read out of the release's
+# cosign-verified SHA256SUMS, then pushes the result to Aplexica/homebrew-tap.
+# That job is gated on the repository variable TAP_PUBLISH_ENABLED, so while
+# the gate is off the bump is done by hand (see the "Homebrew tap" section of
+# docs/RELEASING.md) — from the same source of digests, under the same rule.
+#
+# Release authority is the AWS KMS-backed cosign signature over SHA256SUMS,
+# verified with the independently distributed `aplexica-release.pub`.
+#
+# The four sha256 values below MUST therefore be read out of a COSIGN-VERIFIED
+# SHA256SUMS — "cosign-verified" and not merely "downloaded", because an
+# unverified SHA256SUMS is worthless: anyone able to swap an archive is
+# equally able to swap the digest list sitting next to it. Run
+# `cosign verify-blob` first, transcribe second. docs/install/verify.md
+# carries the exact command.
+
 class Aplexica < Formula
   desc "Cross-agent state portability for AI coding agents"
   homepage "https://aplexica.com"
-  url "https://github.com/Aplexica/Aplexica.git",
-      revision: "3441815c1975868320661a2485bdbac5940a90c6"
-  version "1.0.41"
+  # `version` must precede `license` or brew style flags FormulaAudit/ComponentsOrder.
+  version "1.0.74"
   license "AGPL-3.0-or-later"
-  head "https://github.com/Aplexica/Aplexica.git", branch: "main"
 
-  depends_on "go" => :build
-  depends_on "node" => :build
-  depends_on "pnpm" => :build
-
-  # aplexica-portal is versioned independently (v0.1.x), not in lockstep with
-  # the daemon. Pin the exact portal source embedded in the v1.0.41 desktop
-  # release so Homebrew installs the same reviewed source closure.
-  resource "portal" do
-    url "https://github.com/Aplexica/aplexica-portal.git",
-        revision: "6cd090014acdc5780ada323c4d9c34c3834707a9"
-  end
-
-  def install
-    portal_dest = buildpath/"internal/web/embed/dist-local"
-
-    resource("portal").stage do
-      system "pnpm", "install", "--frozen-lockfile"
-      system "pnpm", "build:local"
-
-      dist_local = Pathname.pwd/"dist-local"
-      odie "portal build did not create #{dist_local}" unless dist_local.directory?
-
-      rm_r portal_dest if portal_dest.exist?
-      mkdir_p portal_dest
-      cp_r dist_local.children, portal_dest
+  on_macos do
+    on_arm do
+      url "https://github.com/Aplexica/Aplexica/releases/download/v#{version}/aplexica-#{version}-darwin-arm64.tar.gz"
+      sha256 "ff5abcb6d664ac34793820ec10bd92129ea5d077d6e976d3f5578d704d2470bb"
     end
-
-    ldflags = %W[
-      -s -w
-      -X github.com/aplexica/aplexica/internal/version.Version=v#{version}
-      -X github.com/aplexica/aplexica/internal/version.GitCommit=3441815c1975868320661a2485bdbac5940a90c6
-      -X github.com/aplexica/aplexica/internal/version.BuildDate=2026-07-22T22:26:47-04:00
-    ].join(" ")
-
-    system "go", "build", "-tags", "release", "-trimpath", "-ldflags", ldflags,
-           "-o", bin/"aplexica", "./cmd/aplexica"
-    system "go", "build", "-tags", "release", "-trimpath", "-ldflags", ldflags,
-           "-o", bin/"aplexica-status", "./cmd/aplexica"
-
-    # Tray indicator — now built on Linux too, not just macOS. The systray
-    # library (fyne.io/systray) uses Cocoa on macOS and pure-Go DBus
-    # (StatusNotifierItem) on Linux, so the Linux build needs no GTK /
-    # AppIndicator dev libraries and no cgo — just `-tags tray`.
-    system "go", "build", "-tags", "tray", "-trimpath", "-ldflags", ldflags,
-           "-o", bin/"aplexicatray", "./cmd/aplexicatray"
+    on_intel do
+      url "https://github.com/Aplexica/Aplexica/releases/download/v#{version}/aplexica-#{version}-darwin-amd64.tar.gz"
+      sha256 "7b0eafebb6d3c35020d5180c3d1f5234e168856929b5a67d9028e5fff4e1ca9a"
+    end
   end
+
+  on_linux do
+    on_arm do
+      url "https://github.com/Aplexica/Aplexica/releases/download/v#{version}/aplexica-#{version}-linux-arm64.tar.gz"
+      sha256 "4fa079299ab0cbedbeb9e4d23a7b32395e96808600841ac75ebce01aa8d447f4"
+    end
+    on_intel do
+      url "https://github.com/Aplexica/Aplexica/releases/download/v#{version}/aplexica-#{version}-linux-amd64.tar.gz"
+      sha256 "43c0c5a3bec57e310aaf45f059787e758d33d486248000208219d7d13cc842f4"
+    end
+  end
+
+  # The release archive is flat — no top-level directory. Verified against
+  # aplexica-1.0.2-darwin-arm64.tar.gz, which contains exactly:
+  #   aplexica  aplexica-status  aplexicatray
+  #   CHANGELOG.md  LICENSE  LICENSE-EXCEPTIONS.md  README.md  SECURITY.md
+  def install
+    bin.install "aplexica"
+    bin.install "aplexica-status"
+    bin.install "aplexicatray"
+
+    doc.install "CHANGELOG.md", "LICENSE", "LICENSE-EXCEPTIONS.md", "README.md", "SECURITY.md"
+  end
+
+  # No `service do` block on purpose. `aplexica setup --install` registers the
+  # daemon with launchd (macOS) or `systemctl --user` (Linux); adding a
+  # `brew services` supervisor would fight that one for the same process.
 
   def caveats
     <<~EOS
-      Aplexica installs three binaries:
-        aplexica        - CLI + daemon (binds 127.0.0.1 only; no LAN listener)
-        aplexica-status - tray status watcher helper
+      Aplexica installs three executables:
+        aplexica        - CLI + daemon + local web UI server (binds 127.0.0.1 only)
+        aplexica-status - status helper the tray spawns, so process monitors can
+                          tell the watcher apart from the daemon
         aplexicatray    - system-tray indicator
 
-      One-time setup — configure and start the daemon + tray (no sudo needed):
+      Complete setup and start the daemon + tray:
         aplexica setup --yes --install
 
-      That installs the per-user service (systemd --user on Linux, launchd on
-      macOS) and the tray autostart entry, then starts them; both come back
-      automatically at each login. This is a separate step because Homebrew
-      runs post_install in a sandbox with a temporary HOME, so autostart can't
-      be wired during `brew install` itself.
+      Do NOT run `brew services start aplexica`. `aplexica setup --install`
+      registers the daemon with launchd (macOS) or `systemctl --user` (Linux);
+      a second supervisor would fight it.
 
-      Open the local web UI from the tray (Open Aplexica), or run:
+      Local web UI: click the tray icon -> Open Aplexica, or run:
         aplexica web open
 
-      User data lives in ~/.aplexica/. Logs at ~/.aplexica/logs/.
+      Linux tray: GNOME needs the AppIndicator/AppIndicatorSupport shell
+      extension for the icon to appear. `aplexica web open` works regardless.
+
+      Aplexica Cloud is a SEPARATE commercial component. No Homebrew, apt,
+      winget, or direct-download channel ships aplexica-cloud-plugin. If you
+      have one, --cloud is only honored together with --install, and the first
+      enrollment also needs its out-of-band trust values:
+        aplexica setup --yes --install \\
+          --cloud /Library/Aplexica/RemotePlugins/aplexica-cloud/vX.Y.Z/aplexica-cloud-plugin \\
+          --cloud-initial-sequence N --cloud-initial-rollback-floor F \\
+          --cloud-initial-inventory-sha256 <independently-verified-sha256>
+      On macOS the plugin tree must be root-owned and read-only; user-owned
+      and Homebrew-prefix paths fail closed by design.
+
+      To uninstall cleanly, unregister the services FIRST:
+        aplexica daemon uninstall
+        aplexica tray uninstall
+        brew uninstall aplexica
+
+      User data lives in ~/.aplexica/ and is NOT removed by brew.
     EOS
   end
 
   test do
-    output = shell_output("#{bin}/aplexica --version")
-    assert_match "v#{version}", output
+    assert_match "v#{version}", shell_output("#{bin}/aplexica --version")
+    system bin/"aplexica", "status"
   end
 end
