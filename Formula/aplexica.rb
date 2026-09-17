@@ -7,7 +7,7 @@
 # already carries the compiled-in local web UI.
 #
 # A source-controlled workflow DOES publish this formula: the `tap` job in
-# .github/workflows/release.yml substitutes 1.0.74 and the four
+# .github/workflows/release.yml substitutes 1.0.75 and the four
 # SHA256_* placeholders below with digests read out of the release's
 # cosign-verified SHA256SUMS, then pushes the result to Aplexica/homebrew-tap.
 # That job is gated on the repository variable TAP_PUBLISH_ENABLED, so while
@@ -28,28 +28,28 @@ class Aplexica < Formula
   desc "Cross-agent state portability for AI coding agents"
   homepage "https://aplexica.com"
   # `version` must precede `license` or brew style flags FormulaAudit/ComponentsOrder.
-  version "1.0.74"
+  version "1.0.75"
   license "AGPL-3.0-or-later"
 
   on_macos do
     on_arm do
       url "https://github.com/Aplexica/Aplexica/releases/download/v#{version}/aplexica-#{version}-darwin-arm64.tar.gz"
-      sha256 "ff5abcb6d664ac34793820ec10bd92129ea5d077d6e976d3f5578d704d2470bb"
+      sha256 "0e8712e228ecad0b36e0c5434c965d075d0e6402eb1009efcbd8d082add50872"
     end
     on_intel do
       url "https://github.com/Aplexica/Aplexica/releases/download/v#{version}/aplexica-#{version}-darwin-amd64.tar.gz"
-      sha256 "7b0eafebb6d3c35020d5180c3d1f5234e168856929b5a67d9028e5fff4e1ca9a"
+      sha256 "6dfea08fc03a4df1b4d102b116cda3f0b4dc1ee7bd6c45513a9858128500dcb1"
     end
   end
 
   on_linux do
     on_arm do
       url "https://github.com/Aplexica/Aplexica/releases/download/v#{version}/aplexica-#{version}-linux-arm64.tar.gz"
-      sha256 "4fa079299ab0cbedbeb9e4d23a7b32395e96808600841ac75ebce01aa8d447f4"
+      sha256 "51738a4d164b99a8d1d8705b3a1400b9fda10032cf01ec1754d162a55a4f92ef"
     end
     on_intel do
       url "https://github.com/Aplexica/Aplexica/releases/download/v#{version}/aplexica-#{version}-linux-amd64.tar.gz"
-      sha256 "43c0c5a3bec57e310aaf45f059787e758d33d486248000208219d7d13cc842f4"
+      sha256 "f3c71502318e454daad3a7a59832217972e99e3bb540c514cb99541ab7a4af2d"
     end
   end
 
