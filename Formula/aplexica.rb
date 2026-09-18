@@ -7,7 +7,7 @@
 # already carries the compiled-in local web UI.
 #
 # A source-controlled workflow DOES publish this formula: the `tap` job in
-# .github/workflows/release.yml substitutes 1.0.75 and the four
+# .github/workflows/release.yml substitutes 1.0.76 and the four
 # SHA256_* placeholders below with digests read out of the release's
 # cosign-verified SHA256SUMS, then pushes the result to Aplexica/homebrew-tap.
 # That job is gated on the repository variable TAP_PUBLISH_ENABLED, so while
@@ -28,28 +28,28 @@ class Aplexica < Formula
   desc "Cross-agent state portability for AI coding agents"
   homepage "https://aplexica.com"
   # `version` must precede `license` or brew style flags FormulaAudit/ComponentsOrder.
-  version "1.0.75"
+  version "1.0.76"
   license "AGPL-3.0-or-later"
 
   on_macos do
     on_arm do
       url "https://github.com/Aplexica/Aplexica/releases/download/v#{version}/aplexica-#{version}-darwin-arm64.tar.gz"
-      sha256 "0e8712e228ecad0b36e0c5434c965d075d0e6402eb1009efcbd8d082add50872"
+      sha256 "05a18f293baaa6b7e7caee1b72c491d6d9a31dcd9478a85a779cab36a89ff727"
     end
     on_intel do
       url "https://github.com/Aplexica/Aplexica/releases/download/v#{version}/aplexica-#{version}-darwin-amd64.tar.gz"
-      sha256 "6dfea08fc03a4df1b4d102b116cda3f0b4dc1ee7bd6c45513a9858128500dcb1"
+      sha256 "04f10b7839f0b476e9fcb28d67bb34ceb115336edab8b862f7a9a55264e74329"
     end
   end
 
   on_linux do
     on_arm do
       url "https://github.com/Aplexica/Aplexica/releases/download/v#{version}/aplexica-#{version}-linux-arm64.tar.gz"
-      sha256 "51738a4d164b99a8d1d8705b3a1400b9fda10032cf01ec1754d162a55a4f92ef"
+      sha256 "33d26a0e5374a1bb39c6e17123e27f1a420a872629e81f1c91aa221e6b5bf0e8"
     end
     on_intel do
       url "https://github.com/Aplexica/Aplexica/releases/download/v#{version}/aplexica-#{version}-linux-amd64.tar.gz"
-      sha256 "f3c71502318e454daad3a7a59832217972e99e3bb540c514cb99541ab7a4af2d"
+      sha256 "be795432a34232d7801064d885b717a125784930d6b673c5cc72bc44daf4d30a"
     end
   end
 
